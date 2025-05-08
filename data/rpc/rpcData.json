@@ -1,0 +1,34 @@
+{
+  "history": [
+    {
+      "name": "Touching grass",
+      "type": "PLAYING",
+      "url": null,
+      "sessionId": "0826fc5d48a2c08e21bf5208c8efb5e5",
+      "platform": null,
+      "timestamps": {
+        "start": 1746715104685,
+        "end": null
+      },
+      "applicationId": null,
+      "details": "please touch grass",
+      "state": "grass is good",
+      "syncId": null,
+      "flags": 0,
+      "buttons": [],
+      "emoji": null,
+      "party": null,
+      "assets": {
+        "large_image": "mp:attachments/1235955217837588520/1370039240259407949/215522-050-8315BB78.png?ex=681e0bf8&is=681cba78&hm=86b1fab92cb59a996e9956cc4f5211ea94d2b8efa5efe4429d61cbb9f1ce2175",
+        "large_text": null,
+        "small_image": "mp:attachments/1235955217837588520/1370039240259407949/215522-050-8315BB78.png?ex=681e0bf8&is=681cba78&hm=86b1fab92cb59a996e9956cc4f5211ea94d2b8efa5efe4429d61cbb9f1ce2175",
+        "small_text": null
+      },
+      "secrets": {},
+      "metadata": {},
+      "savedAt": "2025-05-08 14:40:49",
+      "savedBy": "idlehoa"
+    }
+  ],
+  "lastUpdated": "2025-05-08 14:40:49"
+}

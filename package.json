@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/idlehoa/Nova-Selfbot#readme",
   "dependencies": {
-    "chalk": "^5.4.1",
+    "chalk": "^4.1.2",
     "discord.js-selfbot-rpc": "^1.0.1",
     "dotenv": "^16.5.0",
     "moment": "^2.30.1",
