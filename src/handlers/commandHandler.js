@@ -5,13 +5,12 @@ module.exports = (client) => {
   const commandsPath = path.join(__dirname, '../commands');
   const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
+  console.log(`\nLoaded commands:`); 
 
-  const logger = require('../utils/logger');
-  logger.info('Loaded commands:');
   for (const file of commandFiles) {
     const command = require(`${commandsPath}/${file}`);
     client.commands.set(command.name, command);
-    logger.info(`- ${command.name}`);
+    console.log(`- ${command.name}`);  
   }
 
   client.on('messageCreate', async message => {
@@ -30,18 +29,11 @@ module.exports = (client) => {
       return message.channel.send('');
     }
 
-    const FormatUtil = require('../utils/FormatUtil');
-    const logger = require('../utils/logger');
     try {
       await command.execute(client, message, args);
     } catch (error) {
-      logger.error('Command execution error', { command: commandName, error: error.message });
-      logger.logToFile('ERROR', error.message, { command: commandName });
-      try {
-        await message.channel.send(FormatUtil.error('Command Error', error.message));
-      } catch {
-        await message.channel.send(`❌ Error: ${error.message}`);
-      }
+      console.error(error);
+      message.channel.send('There was an error executing that command.');
     }
   });
 };

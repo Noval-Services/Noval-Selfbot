@@ -11,7 +11,7 @@ module.exports = {
             return message.channel.send([
                 '```diff',
                 '- Usage: shorten <url>',
-                '- Example: shorten https://example.com',
+                '- Example: shorten https://theatlantis.asia/',
                 '```'
             ].join('\n'));
         }
