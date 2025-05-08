@@ -21,119 +21,149 @@ const formatCommand = (prefix, cmd, maxNameLength, theme) => {
     return `${theme.commandPrefix} ${prefix}${paddedName} │ ${cmd.description} ${theme.commandSuffix}`;
 };
 
+const ORDERED_CATEGORIES = [
+    'AI',       // Page 1
+    'FUN',      // Page 2
+    'General',  // Page 3
+    'INFO',     // Page 4
+    'UTILITY'   // Page 5
+];
+const TOTAL_CATEGORY_PAGES = ORDERED_CATEGORIES.length;
+
 module.exports = {
     name: 'help',
-    description: 'Shows all available commands with fancy styling',
+    description: 'Shows commands for a specific category page.',
     async execute(client, message, args) {
         if (!message?.channel) return;
 
         const prefix = process.env.PREFIX || 'i?';
-        const commandList = [];
-        const commandsDir = path.join(__dirname, '.');
         const theme = THEMES.DEFAULT;
 
         try {
-            // Read and process command files
-            const commandFiles = fs.readdirSync(commandsDir)
-                .filter(file => file.endsWith('.js') && file !== 'help.js');
+            const allCommandsRaw = Array.from(client.commands.values())
+                .filter(cmd => cmd.name && cmd.name !== 'help' && !cmd.hidden)
+                .map(cmd => ({
+                    name: cmd.name,
+                    description: cmd.description || 'No description available',
+                    category: cmd.category || 'General',
+                    usage: cmd.usage || null,
+                    aliases: cmd.aliases || []
+                }));
 
-            // Collect commands
-            for (const file of commandFiles) {
-                const command = require(path.join(commandsDir, file));
-                if (command.name && !command.hidden) {
-                    commandList.push({
-                        name: command.name,
-                        description: command.description || 'No description available',
-                        category: command.category || 'General',
-                        usage: command.usage || null
-                    });
+            let targetCategoryName = ORDERED_CATEGORIES[0]; // Default to the first category
+            let pageNumberForDisplay = 1; // Default page number
+            let displayMode = 'PAGED_CATEGORY'; // Default display mode
+
+            if (args.length > 0) {
+                const firstArg = args[0].toLowerCase();
+                const potentialPageNum = parseInt(firstArg);
+
+                console.log(`[HELP DEBUG] Input Arg: "${firstArg}", Parsed Page Number: ${potentialPageNum}`);
+
+                if (!isNaN(potentialPageNum)) { // Argument is a number
+                    console.log(`[HELP DEBUG] Argument interpreted as a number.`);
+                    if (potentialPageNum >= 1 && potentialPageNum <= TOTAL_CATEGORY_PAGES) {
+                        console.log(`[HELP DEBUG] Valid page number detected: ${potentialPageNum}. Target categories: ${ORDERED_CATEGORIES[potentialPageNum - 1]}`);
+                        targetCategoryName = ORDERED_CATEGORIES[potentialPageNum - 1];
+                        pageNumberForDisplay = potentialPageNum;
+                        displayMode = 'PAGED_CATEGORY';
+                    } else {
+                        console.log(`[HELP DEBUG] Page number ${potentialPageNum} is out of range (1-${TOTAL_CATEGORY_PAGES}).`);
+                        await message.channel.send(`❌ Page number \`${potentialPageNum}\` is out of range (1-${TOTAL_CATEGORY_PAGES}). Showing default page (Page 1: ${ORDERED_CATEGORIES[0]}).`);
+                        // Keep default targetCategoryName (ORDERED_CATEGORIES[0]) and pageNumberForDisplay (1)
+                        displayMode = 'PAGED_CATEGORY'; // Still show default page
+                    }
+                } else { // Argument is NOT a number, treat as a potential command name
+                    console.log(`[HELP DEBUG] Argument "${firstArg}" is NOT a number. Checking if it's a command.`);
+                    const cmd = client.commands.get(firstArg) || client.commands.find(c => c.aliases && c.aliases.includes(firstArg));
+                    if (cmd && !cmd.hidden) {
+                        console.log(`[HELP DEBUG] Found specific command: ${cmd.name}. Displaying its details.`);
+                        displayMode = 'SPECIFIC_COMMAND';
+                        let details = [
+                            '```' + theme.color,
+                            `Command: ${prefix}${cmd.name}`,
+                            cmd.aliases && cmd.aliases.length ? `Aliases: ${cmd.aliases.join(', ')}` : '',
+                            `Description: ${cmd.description || 'No description available'}`,
+                            `Category: ${cmd.category || 'General'}`,
+                            cmd.usage ? `Usage: ${prefix}${cmd.name} ${cmd.usage}` : `Usage: ${prefix}${cmd.name}`,
+                            '```'
+                        ].filter(Boolean).join('\n');
+                        await message.channel.send(details);
+                        return; // Exit after showing specific command help
+                    } else {
+                        console.log(`[HELP DEBUG] Argument "${firstArg}" is not a recognized command. Showing default page.`);
+                        await message.channel.send(`❌ Command or Category Page \`${firstArg}\` not found. Showing default help page (Page 1: ${ORDERED_CATEGORIES[0]}).`);
+                        // Keep default targetCategoryName (ORDERED_CATEGORIES[0]) and pageNumberForDisplay (1)
+                        displayMode = 'PAGED_CATEGORY'; // Still show default page
+                    }
                 }
+            } else { // No arguments provided
+                console.log(`[HELP DEBUG] No arguments provided. Showing default page (Page 1: ${ORDERED_CATEGORIES[0]}).`);
+                // Defaults for targetCategoryName, pageNumberForDisplay, and displayMode are already set for this case
             }
 
-            // Show detailed help for a specific command
-            if (args.length && args[0]) {
-                const cmdName = args[0].toLowerCase();
-                const cmd = commandList.find(c => c.name === cmdName);
-                if (cmd) {
-                    let details = [
-                        '```yaml',
-                        `Command: ${prefix}${cmd.name}`,
-                        `Description: ${cmd.description}`,
-                        `Category: ${cmd.category}`,
-                        cmd.usage ? `Usage: ${cmd.usage}` : '',
-                        '```'
-                    ].filter(Boolean).join('\n');
-                    return message.channel.send(details);
-                } else {
-                    return message.channel.send(`❌ Command \`${cmdName}\` not found.`);
+
+            if (displayMode === 'PAGED_CATEGORY') {
+                console.log(`[HELP DEBUG] Proceeding to display paged category. Target: "${targetCategoryName}", Page: ${pageNumberForDisplay}`);
+
+                const commandsForCategory = allCommandsRaw
+                    .filter(cmd => (cmd.category || 'General').toLowerCase() === targetCategoryName.toLowerCase())
+                    .sort((a, b) => a.name.localeCompare(b.name));
+
+                if (commandsForCategory.length === 0) {
+                    console.log(`[HELP DEBUG] No commands found for category "${targetCategoryName}".`);
+                    await message.channel.send(`No commands found for category: **${targetCategoryName}** (Page ${pageNumberForDisplay}).`);
+                    return;
                 }
-            }
+                console.log(`[HELP DEBUG] Found ${commandsForCategory.length} commands for category "${targetCategoryName}".`);
 
-            // Sort commands by category and name
-            commandList.sort((a, b) => {
-                if (a.category === b.category) {
-                    return a.name.localeCompare(b.name);
-                }
-                return a.category.localeCompare(b.category);
-            });
+                const maxNameLength = Math.max(...commandsForCategory.map(cmd => cmd.name.length), 0) + 2;
 
-            // Find the longest command name for padding
-            const maxNameLength = Math.max(...commandList.map(cmd => cmd.name.length)) + 2;
+                const helpLines = [
+                    '```' + theme.color,
+                    theme.border,
+                    `${theme.prefix} ${theme.title} (Page ${pageNumberForDisplay}/${TOTAL_CATEGORY_PAGES}) ${theme.suffix}`,
+                    theme.border,
+                ];
 
-            // Group commands by category
-            const categories = {};
-            commandList.forEach(cmd => {
-                if (!categories[cmd.category]) {
-                    categories[cmd.category] = [];
-                }
-                categories[cmd.category].push(cmd);
-            });
-
-            // Create formatted help message
-            const helpLines = [
-                '```' + theme.color,
-                theme.border,
-                `${theme.prefix} ${theme.title} ${theme.suffix}`,
-                theme.border,
-                `${theme.prefix} Prefix: ${prefix}${' '.repeat(maxNameLength + 20)}${theme.suffix}`,
-                theme.border,
-            ];
-
-            // Add commands by category
-            for (const [category, commands] of Object.entries(categories)) {
+                const categoryTitle = `${theme.categoryPrefix}── ${targetCategoryName} `;
+                const lineLength = Math.max(0, (maxNameLength + 20 + theme.prefix.length + theme.suffix.length + 4) - categoryTitle.length - theme.categorySuffix.length);
                 helpLines.push(
-                    `${theme.categoryPrefix}── ${category} ${'─'.repeat(maxNameLength + 20 - category.length)}${theme.categorySuffix}`
+                    `${categoryTitle}${'─'.repeat(lineLength)}${theme.categorySuffix}`
                 );
-                
-                commands.forEach(cmd => {
+
+                commandsForCategory.forEach(cmd => {
                     helpLines.push(formatCommand(prefix, cmd, maxNameLength, theme));
                 });
-                
+
                 helpLines.push(theme.border);
+
+                // const timestamp = new Date().toLocaleString(); // Optional
+                helpLines.push(
+                    theme.footer,
+                    '```',
+                    `💡 Type \`${prefix}help <command>\` for specific command info.`,
+                    `💡 Type \`${prefix}help <1-${TOTAL_CATEGORY_PAGES}>\` to view a category page.`
+                );
+
+                await message.channel.send(helpLines.join('\n'));
             }
 
-            // Add footer
-            const timestamp = new Date().toLocaleString();
-            helpLines.push(
-                `${theme.prefix} Requested by: ${message.author.username}${' '.repeat(maxNameLength + 10)}${theme.suffix}`,
-                `${theme.prefix} Time: ${timestamp}${' '.repeat(maxNameLength + 15)}${theme.suffix}`,
-                theme.footer,
-                '```',
-                `💡 Type \`${prefix}help <command>\` for detailed information about a specific command.`
-            );
-
-            // Send help message
-            await message.channel.send(helpLines.join('\n'));
-
-        } catch (error) {
+        } catch (error)
+        {
             console.error('Error in help command:', error);
             const errorMessage = [
                 '```diff',
                 '- ⚠️ Error: Failed to Generate Help Menu ⚠️ -',
-                '+ Please contact an administrator if this persists +',
+                `+ Details: ${error.message}`,
+                '+ Please check the console for more information. +',
                 '```'
             ].join('\n');
-            await message.channel.send(errorMessage);
+            try {
+                await message.channel.send(errorMessage);
+            } catch (sendError) {
+                console.error('Error sending help command error message:', sendError);
+            }
         }
     },
 };
