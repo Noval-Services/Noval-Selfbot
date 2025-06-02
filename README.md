@@ -26,8 +26,8 @@ A simple, lightweight Discord selfbot built with JavaScript to automate tasks an
 1. Clone the repo:
 
    ```bash
-   git clone https://github.com/yourusername/discord-selfbot-js.git
-   cd discord-selfbot-js
+   git clone https://github.com/Noval-Services/Noval-Selfbot
+   cd Noval-Selfbot
    ```
 
 2. Install dependencies:
