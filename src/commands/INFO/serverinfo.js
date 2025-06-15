@@ -4,7 +4,7 @@ const moment = require('moment');
 module.exports = {
   name: 'serverinfo',
   description: 'Display concise server information',
-  category: 'UTILITY',
+  category: 'INFO',
   hidden: false,
 
   async execute(client, message, args) {

@@ -1,3 +1,5 @@
+const https = require('https');
+
 module.exports = async (client) => {
   // Startup timestamp for uptime tracking
   client.startTimestamp = Date.now();
@@ -44,6 +46,7 @@ module.exports = async (client) => {
       }
     }
   }
+
 };
 module.exports.name = 'ready';
 module.exports.once = true;

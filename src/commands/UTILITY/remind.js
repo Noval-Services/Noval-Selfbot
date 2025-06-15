@@ -1,5 +1,5 @@
 // src/commands/remind.js
-const FormatUtil = require('../utils/FormatUtil');
+const FormatUtil = require('../../utils/FormatUtil');
 
 module.exports = {
   name: 'remind',

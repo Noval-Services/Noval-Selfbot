@@ -1,7 +1,7 @@
 module.exports = {
     name: 'search',
     description: 'Search anything on Google.',
-    category: 'UTILITY',
+    category: 'INFO',
     hidden: false,
     async execute(client, message, args) {
         if (!message?.channel || message.author.id !== client.user.id) return;
@@ -29,7 +29,7 @@ module.exports = {
               '```md\n🔎 Google Search\n════════════════════\n**Query**: ' + query + '\n**Link**: ' + url + '\n```'
             ).catch(() => {});
         } catch (error) {
-            const FormatUtil = require('../utils/FormatUtil');
+            const FormatUtil = require('../../utils/FormatUtil');
             console.error('Error in search command:', error);
             await message.channel.send(
               FormatUtil.error('Failed to execute search.', error.message)

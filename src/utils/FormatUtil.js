@@ -41,6 +41,83 @@ class FormatUtil {
     const body = rows.map(r => '| ' + r.join(' | ') + ' |').join('\n');
     return `${head}\n${sep}\n${body}`;
   }
+
+  // New: Format duration (seconds) to human readable string
+  static formatDuration(seconds) {
+    const d = Math.floor(seconds / (60 * 60 * 24));
+    const h = Math.floor((seconds % (60 * 60 * 24)) / (60 * 60));
+    const m = Math.floor((seconds % (60 * 60)) / 60);
+    const s = Math.floor(seconds % 60);
+    return [
+      d ? `${d}d` : null,
+      h ? `${h}h` : null,
+      m ? `${m}m` : null,
+      s ? `${s}s` : null
+    ].filter(Boolean).join(' ');
+  }
+
+  // New: Truncate long strings with ellipsis
+  static truncate(str, max = 32) {
+    if (typeof str !== 'string') return '';
+    return str.length > max ? str.slice(0, max - 3) + '...' : str;
+  }
+
+  // New: Pad string left/right for table-like visuals
+  static pad(str, len, dir = 'right') {
+    str = String(str);
+    if (dir === 'left') return str.padStart(len, ' ');
+    return str.padEnd(len, ' ');
+  }
+
+  // New: Capitalize first letter
+  static capitalize(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // New: Format bytes to human readable
+  static formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // New: Format a date to "YYYY-MM-DD HH:mm:ss"
+  static formatDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0') + ' ' +
+      String(d.getHours()).padStart(2, '0') + ':' +
+      String(d.getMinutes()).padStart(2, '0') + ':' +
+      String(d.getSeconds()).padStart(2, '0');
+  }
+
+  // New: Strip markdown from a string
+  static stripMarkdown(str) {
+    if (!str) return '';
+    return str.replace(/[_*~`>]/g, '');
+  }
+
+  // New: Format a number with commas (e.g. 1,234,567)
+  static numberWithCommas(x) {
+    if (typeof x !== 'number' && typeof x !== 'string') return x;
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  // New: Clamp a number between min and max
+  static clamp(num, min, max) {
+    return Math.min(Math.max(num, min), max);
+  }
+
+  // New: Random pick from array
+  static pickRandom(arr) {
+    if (!Array.isArray(arr) || arr.length === 0) return undefined;
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
 }
 
 module.exports = FormatUtil;

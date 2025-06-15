@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
 
-const CONFIG = require('../../lib/rpc/constants');
+const CONFIG = require('../../../lib/rpc/constants');
 
 /**
  * Utility Classes

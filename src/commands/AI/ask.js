@@ -1,5 +1,5 @@
-const AIManager = require('../../AI/AIManager.js');
-const { CHARACTERS } = require('../../AI/lib/characters.js');
+const AIManager = require('../../../AI/AIManager.js');
+const { CHARACTERS } = require('../../../AI/lib/characters.js');
 
 const CONFIG = {
   PREFIX: process.env.PREFIX || '>',

@@ -1,4 +1,4 @@
-const { AI_MODELS } = require('../../AI/lib/constants.js');
+const { AI_MODELS } = require('../../../AI/lib/constants.js');
 const fs = require('fs');
 const path = require('path');
 

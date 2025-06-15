@@ -1,6 +1,5 @@
 const CONFIG = {
   PREFIX: process.env.PREFIX || 'i?',
-  ALLOWED_ROLES: ['admin', 'owner'], // Vai trò được phép chạy lệnh (tùy chọn)
 };
 
 // Hàm định dạng đầu ra
